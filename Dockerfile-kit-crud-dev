@@ -1,0 +1,12 @@
+FROM golang:1.6-alpine
+
+ENV APP_NAME="kit-crud"
+
+COPY ./$APP_NAME /usr/bin
+RUN adduser -D app
+
+WORKDIR /
+
+USER app
+EXPOSE 8082
+CMD $APP_NAME -zipkin.addr="zipkin:9410"

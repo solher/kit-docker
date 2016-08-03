@@ -1,0 +1,60 @@
+version: '2'
+services:
+  zipkin-cassandra:
+    image: openzipkin/zipkin-cassandra:1.6
+    container_name: zipkin-cassandra
+    networks:
+      - zipkin
+    volumes:
+      - zipkin-cassandra-data:/var/lib/cassandra
+
+  zipkin-cron:
+    image: openzipkin/zipkin-dependencies
+    container_name: zipkin-cron
+    networks:
+      - zipkin
+    entrypoint: crond -f
+    environment:
+      - STORAGE_TYPE=cassandra
+      - CASSANDRA_CONTACT_POINTS=zipkin-cassandra
+    depends_on:
+      - zipkin-cassandra
+
+  zipkin:
+    image: openzipkin/zipkin:1.6
+    container_name: zipkin
+    networks:
+      - internal
+      - zipkin
+    environment:
+      - STORAGE_TYPE=cassandra
+      - CASSANDRA_CONTACT_POINTS=zipkin-cassandra
+      - SELF_TRACING_ENABLED=false
+    ports:
+      # UI
+      - 9411:9411
+    depends_on:
+      - zipkin-cassandra
+
+  kit-gateway:
+    build: https://github.com/solher/kit-gateway.git
+    container_name: kit-gateway
+    networks:
+      - internal
+    restart: always
+    ports:
+      - 3000:3000
+
+  kit-crud:
+    build: https://github.com/solher/kit-crud.git
+    container_name: kit-crud
+    networks:
+      - internal
+    restart: always
+
+volumes:
+  zipkin-cassandra-data:
+
+networks:
+  internal:
+  zipkin:

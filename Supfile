@@ -1,0 +1,27 @@
+---
+version: 0.4
+
+networks:
+  dev:
+    env:
+      BUILD: true      
+      COMPOSE_OPTIONS: "-f docker-compose.dev.yml"
+    hosts:
+      - localhost
+
+  prod:
+    env:
+      BUILD: false 
+    hosts:
+      - localhost
+
+commands:
+  deploy:
+    desc: Run "docker-compose up".
+    run: docker-compose -f docker-compose.yml $COMPOSE_OPTIONS up -d --build
+
+  update:
+    desc: Update a service.
+    run: >
+      if $BUILD; then echo "Compiling..."; (cd $SERVICE; GOGC=off GOOS=linux GOARCH=amd64 go build); fi; \
+        docker-compose -f docker-compose.yml $COMPOSE_OPTIONS up -d --build $(basename $SERVICE)
