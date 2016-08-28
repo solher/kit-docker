@@ -40,7 +40,7 @@ networks:
       
 commands:
   prepare:
-    desc: Prepare the environment
+    desc: Prepare the environment.
     run: eval $CHECK_CONTEXT; eval $PREPARE
 
   kit-crud:
