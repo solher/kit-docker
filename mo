@@ -898,6 +898,5 @@ MO_ORIGINAL_COMMAND="$(cd "${BASH_SOURCE%/*}"; pwd)/${BASH_SOURCE##*/}"
 # If sourced, load all functions.
 # If executed, perform the actions as expected.
 if [[ "$0" == "$BASH_SOURCE" ]] || ! [[ -n "$BASH_SOURCE" ]]; then
-    scriptPath=$(cd $(dirname $0); pwd)
-    (export $(cat $scriptPath/.env); mo "$@")
+    mo "$@"
 fi

@@ -1,0 +1,65 @@
+---
+version: 0.4
+
+env:
+  SETUP_MO: 'mo=\"./mo --source=env/\$SUP_NETWORK.env\"'
+  MINIKUBE_EXPECTED: '[[ $(kubectl get nodes -o name) == \"node/minikubevm\" ]] || { echo current k8s target is not minikube; exit 1; }' 
+  GCE_EXPECTED: '[[ $(kubectl get nodes -o name) != \"node/minikubevm\" ]] || { echo current k8s target is not GCE; exit 1; }' 
+
+networks:
+  minikube:
+    hosts:
+      - localhost
+    env: 
+      CHECK_CONTEXT: $MINIKUBE_EXPECTED 
+      PREPARE: '
+        kubectl patch serviceaccounts default -p ''{\"imagePullSecrets\":[{\"name\":\"gcr\"}]}'';
+        kubectl delete secret gcr; 
+        kubectl create secret docker-registry gcr
+        --docker-server=https://eu.gcr.io
+        --docker-username=_json_key
+        --docker-password=\"$(cat deploy-key/*.json)\"
+        --docker-email=foo@bar.com;
+      '
+  staging:
+    hosts:
+      - localhost
+    env: 
+      CHECK_CONTEXT: $GCE_EXPECTED 
+      PREPARE: '
+        echo ''{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"''\$SUP_NETWORK''\"}}'' | kubectl apply -f -
+      '
+  production:
+    hosts:
+      - localhost
+    env: 
+      CHECK_CONTEXT: $GCE_EXPECTED 
+      PREPARE: '
+        echo ''{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"''\$SUP_NETWORK''\"}}'' | kubectl apply -f -
+      '
+      
+commands:
+  prepare:
+    desc: Prepare the environment
+    run: eval $CHECK_CONTEXT; eval $PREPARE
+
+  kit-crud:
+    desc: Deploy kit-crud.
+    run: >
+      eval $CHECK_CONTEXT; eval $SETUP_MO;
+        $mo kit-crud/deployment.mo.yml | kubectl apply -f -;
+        $mo kit-crud/service.mo.yml | kubectl apply -f -;
+
+  kit-gateway:
+    desc: Deploy kit-gateway.
+    run: >
+      eval $CHECK_CONTEXT; eval $SETUP_MO;
+        $mo kit-gateway/deployment.mo.yml | kubectl apply -f -;
+        $mo kit-gateway/service.mo.yml | kubectl apply -f -;
+        $mo kit-gateway/ingress.mo.yml | kubectl apply -f -;
+
+targets:
+  deploy:
+    - prepare
+    - kit-crud
+    - kit-gateway
