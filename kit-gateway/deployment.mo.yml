@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: kit-gateway
-  namespace: {{ENVIRONMENT}}
+  namespace: {{NAMESPACE}}
 spec:
   replicas: {{DEFAULT_REPLICAS}}
   revisionHistoryLimit: {{DEFAULT_HISTORY_LIMIT}}
