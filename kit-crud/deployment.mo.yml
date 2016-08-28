@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kit-crud
+  namespace: {{ENVIRONMENT}}
+spec:
+  replicas: {{DEFAULT_REPLICAS}}
+  revisionHistoryLimit: {{DEFAULT_HISTORY_LIMIT}}
+  template:
+    metadata:
+      labels:
+        app: kit-crud
+    spec:
+      nodeSelector:
+        {{ENVIRONMENT}}: "true"
+      containers:
+      - name: kit-crud
+        image: {{REGISTRY}}/{{PROJECT_NAME}}/kit-crud:latest
+        ports:
+          - name: grpc
+            containerPort: 8082
+        env:
+          - name: APPDASH_ADDR
+            value: "appdash.infrastructure:7701"
+          - name: CRUD_ADDR
+            value: "kit-crud:8082"

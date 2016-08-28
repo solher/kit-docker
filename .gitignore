@@ -1,6 +1,4 @@
-*
-!.gitignore
-!*docker-compose*
-!*Dockerfile*
-!*Supfile*
-!*.sh
+.env
+production.env
+staging.env
+deploy-key.json

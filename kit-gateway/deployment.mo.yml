@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kit-gateway
+  namespace: {{ENVIRONMENT}}
+spec:
+  replicas: {{DEFAULT_REPLICAS}}
+  revisionHistoryLimit: {{DEFAULT_HISTORY_LIMIT}}
+  template:
+    metadata:
+      labels:
+        app: kit-gateway
+    spec:
+      nodeSelector:
+        {{ENVIRONMENT}}: "true"
+      containers:
+      - name: kit-gateway
+        image: {{REGISTRY}}/{{PROJECT_NAME}}/kit-gateway:latest
+        ports:
+          - name: api
+            containerPort: 3000
+        env:
+          - name: APPDASH_ADDR
+            value: "appdash.infrastructure:7701"
+          - name: CRUD_ADDR
+            value: "kit-crud:8082"
