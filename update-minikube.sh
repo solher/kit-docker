@@ -5,8 +5,7 @@ currentDir=$(basename $(pwd))
 
 [[ $(kubectl get nodes -o name) == "node/minikubevm" ]] || { echo current target is not minikube; exit 1; }
 
-[[ -f $scriptPath/minikube.env ]] || { echo minikube.env not found; exit 1; }
-ln -s -f $scriptPath/minikube.env $scriptPath/.env
+$scriptPath/env.sh minikube
 
 echo "Compiling $currentDir"
 GOGC=off GOOS=linux GOARCH=amd64 go build -i -v

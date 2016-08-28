@@ -2,8 +2,7 @@
 
 [[ $(kubectl get nodes -o name) == "node/minikubevm" ]] || { echo current target is not minikube; exit 1; }
 
-[[ -f minikube.env ]] || { echo minikube.env not found; exit 1; }
-ln -s -f minikube.env .env
+./env.sh minikube
 
 # Setup GCR
 kubectl patch serviceaccounts default -p '{"imagePullSecrets":[{"name":"gcr"}]}'
@@ -14,11 +13,6 @@ kubectl create secret docker-registry gcr \
 --docker-password="$(cat deploy-key.json)" \
 --docker-email=foo@bar.com
 
-# kit-gateway
-./mo kit-gateway/deployment.mo.yml | kubectl apply -f -
-./mo kit-gateway/service.mo.yml | kubectl apply -f -
-./mo kit-gateway/ingress.mo.yml | kubectl apply -f -
-
-# kit-crud
-./mo kit-crud/deployment.mo.yml | kubectl apply -f -
-./mo kit-crud/service.mo.yml | kubectl apply -f -
+# App
+(cd kit-gateway; ./deploy.sh)
+(cd kit-crud; ./deploy.sh)
